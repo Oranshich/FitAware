@@ -4,7 +4,7 @@ import time
 import imutils
 import argparse
 
-from voiceRecognitiation import takeCommand
+from modules.voiceRecognitiation import takeCommand
 
 cap = cv2.VideoCapture(0)
 
