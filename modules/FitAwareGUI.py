@@ -9,7 +9,10 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDRoundFlatButton
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.toolbar import MDToolbar
 
 from modules.BicepExcercise import Bicep
 
@@ -17,17 +20,44 @@ class WelcomeScreen(Screen):
     pass
 
 class MainScreen(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, scrn_mngr, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
+        self.grid = MDGridLayout()
+        self.grid.cols = 1
+        # self.manager.transition.direction = 'right'
+        scrn_mngr.transition.direction = 'right'
 
-        self.box = BoxLayout()
+        self.toolbar = MDToolbar()
+        self.set_tool_bar_params()
+        self.grid.add_widget(self.toolbar)
+
+        ''' Create the camera view'''
         self.cam = None
-
         self.create_camera()
-        self.btn = MDRoundFlatButton()
-        self.btn.text = "Back"
-        self.box.add_widget(self.btn)
-        self.add_widget(self.box)
+
+        # ''' Set the back button'''
+        # self.set_back_btn()
+
+        self.add_widget(self.grid)
+
+    # def set_back_btn(self):
+    #     # box = MDBoxLayout()
+    #     btn = MDRoundFlatButton()
+    #     btn.text = "Back"
+    #
+    #     # box.add_widget(btn)
+    #     # box.orientation = 'vertical'
+    #     # box.center_x = 0.5
+    #     # box.center_y = 0.5
+    #     # box.height = 25
+    #     self.grid.add_widget(btn)
+
+    def set_tool_bar_params(self):
+        self.toolbar.title = "Fit Aware"
+        self.toolbar.type = "top"
+        self.toolbar.anchor_title = 'center'
+        self.toolbar.left_action_items = [["keyboard-backspace", lambda x: self.parent.move_to_page("else")]]
+        self.toolbar.elevation = 10
 
     def create_camera(self):
         vs = cv2.VideoCapture(0)
@@ -38,7 +68,7 @@ class MainScreen(Screen):
         args = vars(ap.parse_args())
         self.cam = KivyCamera(capture=vs, fps=60, args=args)
         # self.cam.started = True
-        self.box.add_widget(self.cam)
+        self.grid.add_widget(self.cam)
 
 
 class KivyCamera(Image):
@@ -72,7 +102,7 @@ class FitAwareSM(ScreenManager):
     def __init__(self, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
         self.wlcm = WelcomeScreen()
-        self.mainScrn = MainScreen()
+        self.mainScrn = MainScreen(scrn_mngr=self)
         self.mainScrn.name = '_main_screen_'
         # self.t = testBox()
         self.add_widget(self.mainScrn)
@@ -85,6 +115,7 @@ class FitAwareSM(ScreenManager):
         if page_name_to_go == "main":
             self.current = '_main_screen_'
             self.mainScrn.cam.started = True
+            self.mainScrn.cam.practice_type.clear()
         else:
             self.current = '_wlcm_screen_'
             self.mainScrn.cam.started = False

@@ -35,6 +35,13 @@ class Bicep():
         self.maxAvarage = 0
         self.t0 = timer()
 
+    def clear(self):
+        self.firstFrame = None
+        self.counter = 0
+        self.isDown = False
+        self.maxAvarage = 0
+        self.t0 = timer()
+
     def speak(self,text):
         self.q.push(text)
 
