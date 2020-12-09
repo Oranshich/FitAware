@@ -5,7 +5,7 @@ import imutils
 import time
 import cv2
 import numpy as np
-from SpeakingQueue import SpeakingQueue
+from modules.SpeakingQueue import SpeakingQueue
 q = SpeakingQueue()
 
 # def get_current_avg(vs, firstFrame, args):
