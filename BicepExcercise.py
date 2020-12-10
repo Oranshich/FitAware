@@ -9,23 +9,6 @@ import numpy as np
 from SpeakingQueue import SpeakingQueue
 q = SpeakingQueue()
 
-# def get_current_avg(vs, firstFrame, args):
-#     frame = vs.read()
-#     frame = frame if args.get("video", None) is None else frame[1]
-#     frame = imutils.resize(frame, width=500)
-#     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#     gray = cv2.GaussianBlur(gray, (21, 21), 0)
-#     if firstFrame is None:
-#         firstFrame = gray
-#     frameDelta = cv2.absdiff(firstFrame, gray)
-#     thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
-#     thresh = cv2.dilate(thresh, None, iterations=2)
-#
-#     indices = np.where(thresh == [255])
-#     yCoordinatesAvarage = np.median(indices[1], axis=0)
-#
-#     return yCoordinatesAvarage, frame
-
 def speak(text):
     q.push(text)
 
@@ -97,13 +80,6 @@ def practice():
             M_max_y = int(M_max["m01"] / M_max["m00"])
             if cY > M_max_y:
                 max_c = c
-            #     # draw the contour and center of the shape on the image
-            #     cv2.drawContours(frame, [c], -1, (0, 255, 0), 2)
-            #     cv2.circle(frame, (cX, cY), 7, (255, 255, 255), -1)
-            #     cv2.putText(frame, "center", (cX - 20, cY - 20),
-            #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-            #
-            # else:
         if len(cnts) > 0:
             cv2.drawContours(frame, [max_c], -1, (0, 255, 0), 2)
             cv2.circle(frame, (M_max_x, M_max_y), 7, (255, 255, 255), -1)
@@ -124,8 +100,8 @@ def practice():
             print("inside")
             t1 = timer()
             # print('t1 time', t1)
-            if yCoordinatesAvarage > 0 and t1-t0 > 3:
-
+            if yCoordinatesAvarage > 0:
+                time.sleep(2.0)
                 speak("3")
                 speak("2 ")
                 speak("1 ")
