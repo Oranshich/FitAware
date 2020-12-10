@@ -1,0 +1,52 @@
+# kv file
+<FitAwareSM>:
+    WelcomeScreen:
+    #MainScreen:
+
+<MyBaseScreen@MDBoxLayout>:
+# This is a base layout for the different screens in the app
+    lbl_text: ''
+    btn_txt: ''
+    btn_next_pge: None
+    direction: 'right'
+
+    orientation: 'vertical'
+    MDToolbar:
+        title: "Fit Aware"
+        type: "top"
+        anchor_title: 'center'
+        left_action_items: [["menu", lambda x: x]]
+        elevation: 10
+
+    MDLabel:
+        text: root.lbl_text
+        halign: "center"
+
+    MDRoundFlatButton:
+        icon: "language-python"
+        line_color: 0, 0, 0, 0
+        pos_hint: {"center_x": .5, "center_y": .5}
+        text: root.btn_txt
+        on_press:
+            app.sm.move_to_page(root.btn_next_pge)
+            app.sm.transition.direction = root.direction
+
+
+<WelcomeScreen>:
+    name: '_wlcm_screen_'
+    MyBaseScreen:
+        lbl_text: "Welcome"
+        btn_txt: "Next"
+        btn_next_pge: "main"
+        direction: "left"
+
+
+#<MainScreen>:
+   # name: '_main_screen_'
+
+
+    #MyBaseScreen:
+    #    lbl_text: "Main"
+    #    btn_txt: "Back"
+    #    btn_next_pge: "welcome"
+    #    direction: "right"
