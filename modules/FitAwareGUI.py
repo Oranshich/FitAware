@@ -25,8 +25,10 @@ class MainScreen(Screen):
         self.grid.cols = 1
         self.practice_type = None
         self.vs = None
+        self.rep_num = 0
         # self.manager.transition.direction = 'right'
-        scrn_mngr.transition.direction = 'right'
+        self.scrn_mngr = scrn_mngr
+        self.scrn_mngr.transition.direction = 'right'
 
         self.toolbar = MDToolbar()
         self.set_tool_bar_params()
@@ -61,16 +63,19 @@ class MainScreen(Screen):
         args = vars(ap.parse_args())
         if self.cam in self.grid.children:
             self.grid.remove_widget(self.cam)
-        self.cam = KivyCamera(capture=self.vs, fps=60, args=args, pr_type=self.practice_type)
+        self.cam = KivyCamera(capture=self.vs, fps=60, args=args, pr_type=self.practice_type,
+                              prnt=self)
         self.grid.add_widget(self.cam)
         # self.cam.started = True
 
 
 class KivyCamera(Image):
-    def __init__(self, capture, fps,args, pr_type, **kwargs):
+    def __init__(self, capture, fps,args, pr_type, prnt, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
         self.args = args
+        self.prnt = prnt
+        self.rep_num = 0
         self.started = False
         self.allow_stretch = True
         self.practice_type = pr_type
@@ -82,6 +87,11 @@ class KivyCamera(Image):
             if ret:
                 # convert it to texture
                 frame = self.practice_type.practice(vs=self.capture, args=self.args, frame=frame)
+                if self.practice_type.counter >= self.rep_num:
+                    # self.practice_type.q.push("Success")
+                    self.started = False
+                    Clock.unschedule(self.update)
+                    self.prnt.scrn_mngr.success("success", self.practice_type.q)
                 buf1 = cv2.flip(frame, 0)
                 buf = buf1.tostring()
                 image_texture = Texture.create(
@@ -114,15 +124,11 @@ class FitAwareSM(ScreenManager):
                 self.current = '_main_screen_'
                 self.mainScrn.cam.started = True
                 self.mainScrn.cam.practice_type.clear()
+                self.mainScrn.cam.rep_num = int(self.wlcm.ids.rep_num.text)
             else:
-                self.show_alert_dialog()
+                self.show_alert_dialog("Please choose practice type and Fill the number of repetitions")
         else:
-            self.clear_welcome_screen()
-            self.current = '_wlcm_screen_'
-            self.mainScrn.vs.release()
-            # vs.stop() if args.get("video", None) is None else vs.release()
-            # cv2.destroyAllWindows()
-            self.mainScrn.cam.started = False
+            self.change_screen_to_welcome()
 
     def clear_welcome_screen(self):
         chooser = self.wlcm.ids.chooser
@@ -130,10 +136,10 @@ class FitAwareSM(ScreenManager):
             chip.color = chip.theme_cls.primary_color
         self.wlcm.ids.rep_num.text = ""
 
-    def show_alert_dialog(self):
+    def show_alert_dialog(self, text):
         if not self.dialog:
             self.dialog = MDDialog(
-                text="Please choose practice type and Fill the number of repetitions",
+                text=text,
                 buttons=[
                     MDFlatButton(
                         text="OK",
@@ -154,7 +160,17 @@ class FitAwareSM(ScreenManager):
             self.mainScrn.create_camera()
             return True
 
+    def success(self,msg, speakingQ):
+        self.change_screen_to_welcome()
+        speakingQ.push(msg)
+        self.show_alert_dialog("Well Done!")
 
+
+    def change_screen_to_welcome(self):
+        self.clear_welcome_screen()
+        self.current = '_wlcm_screen_'
+        self.mainScrn.vs.release()
+        self.mainScrn.cam.started = False
 
 
 class CamApp(MDApp):
