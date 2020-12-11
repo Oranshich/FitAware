@@ -67,7 +67,7 @@ class MainScreen(Screen):
 
 
 class KivyCamera(Image):
-    def __init__(self, capture, fps,args, pr_type, rep_num, **kwargs):
+    def __init__(self, capture, fps,args, pr_type, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
         self.args = args
