@@ -2,21 +2,18 @@ import argparse
 import time
 
 import cv2
-from imutils.video import VideoStream
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDRoundFlatButton
+from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.toolbar import MDToolbar
-
+from kivymd.uix.chip import MDChip
 from modules.BicepExcercise import Bicep
 from modules.PushUpExcercise import PushUp
-
 
 class WelcomeScreen(Screen):
     pass
@@ -26,33 +23,29 @@ class MainScreen(Screen):
         super(MainScreen, self).__init__(**kwargs)
         self.grid = MDGridLayout()
         self.grid.cols = 1
+        self.practice_type = None
+        self.vs = None
+        self.rep_num = 0
         # self.manager.transition.direction = 'right'
-        scrn_mngr.transition.direction = 'right'
+        self.scrn_mngr = scrn_mngr
+        self.scrn_mngr.transition.direction = 'right'
 
         self.toolbar = MDToolbar()
         self.set_tool_bar_params()
         self.grid.add_widget(self.toolbar)
 
-        ''' Create the camera view'''
+        # ''' Create the camera view'''
         self.cam = None
-        self.create_camera()
+        # self.grid.add_widget(self.cam)
+
+        # self.create_camera()
 
         # ''' Set the back button'''
         # self.set_back_btn()
 
         self.add_widget(self.grid)
 
-    # def set_back_btn(self):
-    #     # box = MDBoxLayout()
-    #     btn = MDRoundFlatButton()
-    #     btn.text = "Back"
-    #
-    #     # box.add_widget(btn)
-    #     # box.orientation = 'vertical'
-    #     # box.center_x = 0.5
-    #     # box.center_y = 0.5
-    #     # box.height = 25
-    #     self.grid.add_widget(btn)
+
 
     def set_tool_bar_params(self):
         self.toolbar.title = "Fit Aware"
@@ -62,25 +55,30 @@ class MainScreen(Screen):
         self.toolbar.elevation = 10
 
     def create_camera(self):
-        vs = cv2.VideoCapture(0)
+        self.vs = cv2.VideoCapture(0)
         ap = argparse.ArgumentParser()
         ap.add_argument("-v", "--video", help="path to the video file")
         ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
 
         args = vars(ap.parse_args())
-        self.cam = KivyCamera(capture=vs, fps=100, args=args)
-        # self.cam.started = True
+        if self.cam in self.grid.children:
+            self.grid.remove_widget(self.cam)
+        self.cam = KivyCamera(capture=self.vs, fps=60, args=args, pr_type=self.practice_type,
+                              prnt=self)
         self.grid.add_widget(self.cam)
+        # self.cam.started = True
 
 
 class KivyCamera(Image):
-    def __init__(self, capture, fps,args, **kwargs):
+    def __init__(self, capture, fps,args, pr_type, prnt, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
         self.args = args
+        self.prnt = prnt
+        self.rep_num = 0
         self.started = False
         self.allow_stretch = True
-        self.practice_type = Bicep()
+        self.practice_type = pr_type
         Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
@@ -89,6 +87,11 @@ class KivyCamera(Image):
             if ret:
                 # convert it to texture
                 frame = self.practice_type.practice(vs=self.capture, args=self.args, frame=frame)
+                if self.practice_type.counter >= self.rep_num:
+                    # self.practice_type.q.push("Success")
+                    self.started = False
+                    Clock.unschedule(self.update)
+                    self.prnt.scrn_mngr.success("success", self.practice_type.q)
                 buf1 = cv2.flip(frame, 0)
                 buf = buf1.tostring()
                 image_texture = Texture.create(
@@ -101,68 +104,86 @@ class KivyCamera(Image):
 class FitAwareSM(ScreenManager):
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, prnt, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
+        self.prnt = prnt
+        self.dialog = None
         self.wlcm = WelcomeScreen()
         self.mainScrn = MainScreen(scrn_mngr=self)
         self.mainScrn.name = '_main_screen_'
         # self.t = testBox()
+        self.add_widget(self.wlcm)
         self.add_widget(self.mainScrn)
         self.practice_type = Bicep()
         # self.call_practice()
         self.started = False
 
-
     def move_to_page(self, page_name_to_go):
         if page_name_to_go == "main":
-            self.current = '_main_screen_'
-            self.mainScrn.cam.started = True
-            self.mainScrn.cam.practice_type.clear()
+            if self.validate_inputs():
+                self.current = '_main_screen_'
+                self.mainScrn.cam.started = True
+                self.mainScrn.cam.practice_type.clear()
+                self.mainScrn.cam.rep_num = int(self.wlcm.ids.rep_num.text)
+            else:
+                self.show_alert_dialog("Please choose practice type and Fill the number of repetitions")
         else:
-            self.current = '_wlcm_screen_'
-            self.mainScrn.cam.started = False
+            self.change_screen_to_welcome()
+
+    def clear_welcome_screen(self):
+        chooser = self.wlcm.ids.chooser
+        for chip in chooser.children:
+            chip.color = chip.theme_cls.primary_color
+        self.wlcm.ids.rep_num.text = ""
+
+    def show_alert_dialog(self, text):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                text=text,
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        text_color=self.prnt.theme_cls.primary_color
+                    )
+                ],
+            )
+            self.dialog.buttons[0].bind(on_press=self.close_dialog)
+        self.dialog.open()
+
+    def close_dialog(self, instance):
+        self.dialog.dismiss(force=True)
+
+    def validate_inputs(self):
+        if self.mainScrn.practice_type is None or len(self.wlcm.ids.rep_num.text) == 0:
+            return False
+        else:
+            self.mainScrn.create_camera()
+            return True
+
+    def success(self,msg, speakingQ):
+        self.change_screen_to_welcome()
+        speakingQ.push(msg)
+        self.show_alert_dialog("Well Done!")
 
 
-    # def call_practice(self):
-    #     ap = argparse.ArgumentParser()
-    #     ap.add_argument("-v", "--video", help="path to the video file")
-    #     ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
-    #
-    #     # args = vars(ap.parse_args())
-    #     # if the video argument is None, then we are reading from webcam
-    #     # if args.get("video", None) is None:
-    #     #     vs = VideoStream(src=0).start()
-    #     #     time.sleep(2.0)
-    #     # # otherwise, we are reading from a video file
-    #     # else:
-    #     #     vs = cv2.VideoCapture(args["video"])
-    #     # Clock.schedule_interval(self.practice_type.practice(vs, args), 1.0 / 60)
-
-
-class testBox(Screen):
-
-    def __init__(self, **kwargs):
-        super(testBox, self).__init__(**kwargs)
-        vs = cv2.VideoCapture(0)
-        self.cam = KivyCamera(capture=vs, fps=60)
-        self.cam.started = True
-        self.box = BoxLayout()
-        self.box.add_widget(self.cam)
-        self.add_widget(self.box)
+    def change_screen_to_welcome(self):
+        self.clear_welcome_screen()
+        self.current = '_wlcm_screen_'
+        self.mainScrn.vs.release()
+        self.mainScrn.cam.started = False
 
 
 class CamApp(MDApp):
 
     def build(self):
+        self.sm = FitAwareSM(prnt=self)
         self.theme_cls.primary_palette = "Teal"
-        self.sm = FitAwareSM()
-        # self.sm = testBox()
-        # self.q = SpeakingQueue()
-        # vs = cv2.VideoCapture(0)
-        # self.sm = KivyCamera(capture=vs,fps=60)
-        # self.sm.started = True
+        self.title = "Fit Aware"
+
         return self.sm
 
+    def select_practice(self,instance, value):
+        self.sm.mainScrn.practice_type = Bicep() if str(value).lower() in "bicep" else PushUP()
 
 
 if __name__ == '__main__':

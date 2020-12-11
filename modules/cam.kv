@@ -1,52 +1,108 @@
 # kv file
-<FitAwareSM>:
-    WelcomeScreen:
-    #MainScreen:
-
-<MyBaseScreen@MDBoxLayout>:
-# This is a base layout for the different screens in the app
-    lbl_text: ''
-    btn_txt: ''
-    btn_next_pge: None
-    direction: 'right'
-
-    orientation: 'vertical'
-    MDToolbar:
-        title: "Fit Aware"
-        type: "top"
-        anchor_title: 'center'
-        left_action_items: [["menu", lambda x: x]]
-        elevation: 10
-
-    MDLabel:
-        text: root.lbl_text
-        halign: "center"
-
-    MDRoundFlatButton:
-        icon: "language-python"
-        line_color: 0, 0, 0, 0
-        pos_hint: {"center_x": .5, "center_y": .5}
-        text: root.btn_txt
-        on_press:
-            app.sm.move_to_page(root.btn_next_pge)
-            app.sm.transition.direction = root.direction
 
 
 <WelcomeScreen>:
     name: '_wlcm_screen_'
-    MyBaseScreen:
-        lbl_text: "Welcome"
-        btn_txt: "Next"
-        btn_next_pge: "main"
-        direction: "left"
+    lbl_text: "Welcome"
+    btn_txt: "Start"
+    btn_next_pge: "main"
+    direction: "left"
+    rep_num: rep_num
+    chooser: chooser
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 2
+
+        MDToolbar:
+            title: "Fit Aware"
+            anchor_title: 'center'
+            md_bg_color: app.theme_cls.primary_color
+            #left_action_items: [["menu", lambda x: x]]
+            #right_action_items: [["settings-outline", lambda x: app.show_theme_picker()]]
+            background_palette: "Primary"
+
+        MDStackLayout:
+
+            MDGridLayout:
+                padding: 2
+                #spacing: dp(10)
+                cols: 1
+                #size_hint_y: None
+                height: self.minimum_height
+                #row_default_height: 20
+                #row_force_default: True
+
+                MDLabel:
+                    text: "Welcome to FitAware, Let's Start Training"
+                    halign: 'center'
+                    text_size: (10,10)
+                    size_hint: (.5,.1)
+                MDSeparator:
+
+                MDGridLayout:
+                    cols: 4
+                    height: 20
+                    #padding: 10
+                    #spacing: 10
+
+                    # Row 1
+                    MDLabel:
+                        text: ""
+
+                    MDLabel:
+                        text: "What type of training today?"
+                        halign: 'center'
+
+                    MDBoxLayout:
+                        MDChooseChip:
+                            id: chooser
+                            pos_hint: {'x': 1, 'y': 0.4}
+
+                            MDChip:
+                                label: "Bicep"
+                                icon: "arm-flex-outline"
+                                callback: app.select_practice
+                                selected_chip_color: .21176470535294, .098039627451, 1, 1
 
 
-#<MainScreen>:
-   # name: '_main_screen_'
+                            MDChip:
+                                label: "Push Ups"
+                                icon: "arm-flex-outline"
+                                callback: app.select_practice
+                                selected_chip_color: .21176470535294, .098039627451, 1, 1
+                    MDLabel:
+                        text: ""
 
+                    # Row 2
+                    MDLabel:
+                        text: ""
 
-    #MyBaseScreen:
-    #    lbl_text: "Main"
-    #    btn_txt: "Back"
-    #    btn_next_pge: "welcome"
-    #    direction: "right"
+                    MDLabel:
+                        text: "How many repetitions?"
+                        halign: 'center'
+
+                    MDBoxLayout:
+                        MDTextFieldRound:
+                            id: rep_num
+                            hint_text: 'Repetitions'
+                            pos_hint: {'x': -0.9, 'y': .4}
+                            max_text_length: 2
+
+                    MDBoxLayout:
+                        MDLabel:
+                            text: ""
+
+                    # Row 3
+                    MDLabel:
+                        text: ""
+
+                    MDBoxLayout:
+                        MDLabel:
+                            text: ""
+
+                    MDBoxLayout:
+                        MDRoundFlatButton:
+                            text: 'Start'
+                            pos_hint: {'center_x': 1, 'y': .8}
+                            on_press: app.sm.move_to_page("main")
