@@ -15,6 +15,8 @@ from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.toolbar import MDToolbar
 
 from modules.BicepExcercise import Bicep
+from modules.PushUpExcercise import PushUp
+
 
 class WelcomeScreen(Screen):
     pass
@@ -66,7 +68,7 @@ class MainScreen(Screen):
         ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
 
         args = vars(ap.parse_args())
-        self.cam = KivyCamera(capture=vs, fps=60, args=args)
+        self.cam = KivyCamera(capture=vs, fps=100, args=args)
         # self.cam.started = True
         self.grid.add_widget(self.cam)
 

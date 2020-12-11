@@ -1,7 +1,5 @@
-import BicepExcercise
-
 # prac = OpenCVTest2.Practice()
 # BicepExcercise.practice()
-import PushUpExcercise
+from modules import PushUpExcercise
 
 PushUpExcercise.practice()
