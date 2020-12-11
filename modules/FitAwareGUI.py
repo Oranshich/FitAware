@@ -2,19 +2,16 @@ import argparse
 import time
 
 import cv2
-from imutils.video import VideoStream
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDRoundFlatButton
+from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.picker import MDThemePicker
 from kivymd.uix.toolbar import MDToolbar
-
+from kivymd.uix.chip import MDChip
 from modules.BicepExcercise import Bicep
 from modules.PushUpExcercise import PushUP
 
@@ -70,7 +67,7 @@ class MainScreen(Screen):
 
 
 class KivyCamera(Image):
-    def __init__(self, capture, fps,args, pr_type, **kwargs):
+    def __init__(self, capture, fps,args, pr_type, rep_num, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
         self.args = args
@@ -97,8 +94,10 @@ class KivyCamera(Image):
 class FitAwareSM(ScreenManager):
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, prnt, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
+        self.prnt = prnt
+        self.dialog = None
         self.wlcm = WelcomeScreen()
         self.mainScrn = MainScreen(scrn_mngr=self)
         self.mainScrn.name = '_main_screen_'
@@ -115,12 +114,38 @@ class FitAwareSM(ScreenManager):
                 self.current = '_main_screen_'
                 self.mainScrn.cam.started = True
                 self.mainScrn.cam.practice_type.clear()
+            else:
+                self.show_alert_dialog()
         else:
+            self.clear_welcome_screen()
             self.current = '_wlcm_screen_'
             self.mainScrn.vs.release()
             # vs.stop() if args.get("video", None) is None else vs.release()
             # cv2.destroyAllWindows()
             self.mainScrn.cam.started = False
+
+    def clear_welcome_screen(self):
+        chooser = self.wlcm.ids.chooser
+        for chip in chooser.children:
+            chip.color = chip.theme_cls.primary_color
+        self.wlcm.ids.rep_num.text = ""
+
+    def show_alert_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                text="Please choose practice type and Fill the number of repetitions",
+                buttons=[
+                    MDFlatButton(
+                        text="OK",
+                        text_color=self.prnt.theme_cls.primary_color
+                    )
+                ],
+            )
+            self.dialog.buttons[0].bind(on_press=self.close_dialog)
+        self.dialog.open()
+
+    def close_dialog(self, instance):
+        self.dialog.dismiss(force=True)
 
     def validate_inputs(self):
         if self.mainScrn.practice_type is None or len(self.wlcm.ids.rep_num.text) == 0:
@@ -135,7 +160,7 @@ class FitAwareSM(ScreenManager):
 class CamApp(MDApp):
 
     def build(self):
-        self.sm = FitAwareSM()
+        self.sm = FitAwareSM(prnt=self)
         self.theme_cls.primary_palette = "Teal"
         self.title = "Fit Aware"
 
