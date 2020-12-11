@@ -139,7 +139,7 @@ class FitAwareSM(ScreenManager):
     def show_alert_dialog(self, text):
         if not self.dialog:
             self.dialog = MDDialog(
-                text=text,
+                text="",
                 buttons=[
                     MDFlatButton(
                         text="OK",
@@ -148,6 +148,7 @@ class FitAwareSM(ScreenManager):
                 ],
             )
             self.dialog.buttons[0].bind(on_press=self.close_dialog)
+        self.dialog.text = text
         self.dialog.open()
 
     def close_dialog(self, instance):
