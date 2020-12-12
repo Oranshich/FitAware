@@ -2,26 +2,52 @@ import argparse
 import time
 
 import cv2
+from kivy.core.window import Window
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.instructions import Instruction
+from kivy.graphics.vertex_instructions import Rectangle
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
+from kivy.uix.popup import Popup
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.app import App
-from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.toolbar import MDToolbar
-from kivymd.uix.chip import MDChip
+from kivy.uix.stacklayout import StackLayout
+
 from modules.BicepExcercise import Bicep
 from modules.PushUpExcercise import PushUP
+
+Window.size = (650, 500)
+
+class ToolBar(BoxLayout):
+    pass
+
+
+class PopupWindow(Popup):
+    pass
+
 
 class WelcomeScreen(Screen):
     pass
 
+
 class MainScreen(Screen):
     def __init__(self, scrn_mngr, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
-        self.grid = MDGridLayout()
+        with self.canvas:
+            Color(rgba=[1, 1, 1, 1])
+            Rectangle(pos=self.pos, size=Window.size)
+        # canvas.before:
+        #         Color:
+        #             rgba: 1, 1, 1, 1
+        #         Rectangle:
+        #             pos: self.pos
+        #             size: self.size
+        self.grid = GridLayout()
         self.grid.cols = 1
         self.practice_type = None
         self.vs = None
@@ -30,7 +56,7 @@ class MainScreen(Screen):
         self.scrn_mngr = scrn_mngr
         self.scrn_mngr.transition.direction = 'right'
 
-        self.toolbar = MDToolbar()
+        self.toolbar = ToolBar()
         self.set_tool_bar_params()
         self.grid.add_widget(self.toolbar)
 
@@ -38,7 +64,7 @@ class MainScreen(Screen):
         self.cam = None
         # self.grid.add_widget(self.cam)
 
-        # self.create_camera()
+        #self.create_camera()
 
         # ''' Set the back button'''
         # self.set_back_btn()
@@ -49,10 +75,12 @@ class MainScreen(Screen):
 
     def set_tool_bar_params(self):
         self.toolbar.title = "Fit Aware"
-        self.toolbar.type = "top"
-        self.toolbar.anchor_title = 'center'
-        self.toolbar.left_action_items = [["keyboard-backspace", lambda x: self.parent.move_to_page("else")]]
-        self.toolbar.elevation = 10
+
+        back_btn = Button()
+        # self.toolbar.pos_hint = {'x': .7, 'y': .83}
+        #self.toolbar.anchor_title = 'center'
+        # self.toolbar.left_action_items = [["keyboard-backspace", lambda x: self.parent.move_to_page("else")]]
+        # self.toolbar.elevation = 10
 
     def create_camera(self):
         self.vs = cv2.VideoCapture(0)
@@ -102,18 +130,16 @@ class KivyCamera(Image):
 
 
 class FitAwareSM(ScreenManager):
-
-
     def __init__(self, prnt, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
         self.prnt = prnt
-        #self.dialog = None
+        self.dialog = None
         self.wlcm = WelcomeScreen()
-        #self.mainScrn = MainScreen(scrn_mngr=self)
-        #self.mainScrn.name = '_main_screen_'
+        self.mainScrn = MainScreen(scrn_mngr=self)
+        self.mainScrn.name = '_main_screen_'
         # self.t = testBox()
         self.add_widget(self.wlcm)
-        #self.add_widget(self.mainScrn)
+        self.add_widget(self.mainScrn)
         self.practice_type = None
         # self.call_practice()
         self.started = False
@@ -138,20 +164,11 @@ class FitAwareSM(ScreenManager):
 
     def show_alert_dialog(self, text):
         if not self.dialog:
-            self.dialog = MDDialog(
-                text="",
-                buttons=[
-                    MDFlatButton(
-                        text="OK",
-                        text_color=self.prnt.theme_cls.primary_color
-                    )
-                ],
-            )
-            self.dialog.buttons[0].bind(on_press=self.close_dialog)
-        self.dialog.text = text
+            self.dialog = PopupWindow()
+        self.dialog.msg = text
         self.dialog.open()
 
-    def close_dialog(self, instance):
+    def close_dialog(self):
         self.dialog.dismiss(force=True)
 
     def validate_inputs(self):
@@ -178,12 +195,12 @@ class CamApp(App):
 
     def build(self):
         self.sm = FitAwareSM(prnt=self)
-        #self.theme_cls.primary_palette = "Teal"
+        # self.theme_cls.primary_palette = "Teal"
         self.title = "Fit Aware"
 
         return self.sm
 
-    def select_practice(self,instance, value):
+    def select_practice(self, value):
         self.sm.mainScrn.practice_type = Bicep() if str(value).lower() in "bicep" else PushUP()
 
 

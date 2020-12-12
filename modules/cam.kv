@@ -1,16 +1,78 @@
 # kv file
 
 
+<PopupWindow@Popup>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    #size_hint: None, None
+    title: "Fit Aware"
+    anchor_title: 'center'
+    msg: ""
+
+    GridLayout:
+        cols: 1
+
+        #RelativeLayout:
+        Label:
+            text: root.msg
+            color: 0,0,0,1
+            bold: True
+            #size_hint: None,None
+            #size: 0.08 * root.width, 0.05 * root.height
+            #pos: 0.55 * (0.5 * root.width), 0.5 * root.height
+
+        Button:
+            text: 'Ok'
+            halign: root.anchor_title
+            on_press: app.sm.close_dialog()
+
+
+<ToolBar@BoxLayout>:
+    size_hint: None, None
+    title: "Fit Aware"
+    anchor_title: 'center'
+    #size: root.width, 0.1 * root.height
+    canvas:
+        Color:
+            rgba: 0, 0.5, 0.8, 0.5
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    pos_hint: {'x': 0.45, 'y': 0.83}
+    Label:
+        text: root.title
+        halign: root.anchor_title
+
 <WelcomeScreen>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
     name: '_wlcm_screen_'
     chooser: chooser
+    rep_num: rep_num
+
+    prctc_btns_h_multiplier: -0.1
+    txt_input_h_multiplier: 0.1
+
+    ToolBar:
 
     GridLayout:
         cols: 2
-        #rows: 10
 
-        Label:
-            text: "Practice"
+        RelativeLayout:
+            Label:
+                text: "Practice"
+                color: 0,0,0,1
+                size_hint: None,None
+                size: 0.08 * root.width, 0.05 * root.height
+                pos: 0.55 * (0.5 * root.width), root.prctc_btns_h_multiplier * root.height
 
         RelativeLayout:
             id: chooser
@@ -19,11 +81,45 @@
                 group: 'practice'
                 size_hint: None,None
                 size: 0.08 * root.width, 0.05 * root.height
-                pos: 0.12 * root.width, 0.350 * root.height
+                pos: 0 * root.width, root.prctc_btns_h_multiplier * root.height
+                on_press: app.select_practice(self.text)
 
             ToggleButton:
                 text: "Push Ups"
                 group: 'practice'
                 size_hint: None,None
                 size: 0.1 * root.width, 0.05 * root.height
-                pos: 0.23 * root.width, 0.350 * root.height
+                pos: 0.11 * root.width, root.prctc_btns_h_multiplier * root.height
+                on_press: app.select_practice(self.text)
+
+
+
+        RelativeLayout:
+            Label:
+                text: "Repetitions"
+                color: 0,0,0,1
+                size_hint: None,None
+                size: 0.08 * root.width, 0.05 * root.height
+                pos: 0.55 * (0.5 * root.width), root.txt_input_h_multiplier * root.height
+
+        RelativeLayout:
+            TextInput:
+                id: rep_num
+                hint_text: "Bicep"
+                size_hint: None,None
+                size: 0.23 * root.width, 0.05 * root.height
+                pos: 0 * root.width, root.txt_input_h_multiplier * root.height
+                input_filter: 'int'
+                multiline: False
+
+
+        Label:
+            text: ""
+
+        RelativeLayout:
+            Button:
+                text: "Start"
+                size_hint: None,None
+                size: 0.23 * root.width, 0.05 * root.height
+                pos: 0 * root.width, 0.2 * root.height
+                on_press: app.sm.move_to_page("main")
