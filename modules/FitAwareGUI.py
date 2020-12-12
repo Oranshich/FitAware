@@ -6,7 +6,7 @@ from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivymd.app import MDApp
+from kivy.app import App
 from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
@@ -107,14 +107,14 @@ class FitAwareSM(ScreenManager):
     def __init__(self, prnt, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
         self.prnt = prnt
-        self.dialog = None
+        #self.dialog = None
         self.wlcm = WelcomeScreen()
-        self.mainScrn = MainScreen(scrn_mngr=self)
-        self.mainScrn.name = '_main_screen_'
+        #self.mainScrn = MainScreen(scrn_mngr=self)
+        #self.mainScrn.name = '_main_screen_'
         # self.t = testBox()
         self.add_widget(self.wlcm)
-        self.add_widget(self.mainScrn)
-        self.practice_type = Bicep()
+        #self.add_widget(self.mainScrn)
+        self.practice_type = None
         # self.call_practice()
         self.started = False
 
@@ -174,11 +174,11 @@ class FitAwareSM(ScreenManager):
         self.mainScrn.cam.started = False
 
 
-class CamApp(MDApp):
+class CamApp(App):
 
     def build(self):
         self.sm = FitAwareSM(prnt=self)
-        self.theme_cls.primary_palette = "Teal"
+        #self.theme_cls.primary_palette = "Teal"
         self.title = "Fit Aware"
 
         return self.sm

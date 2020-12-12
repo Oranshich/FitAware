@@ -3,106 +3,27 @@
 
 <WelcomeScreen>:
     name: '_wlcm_screen_'
-    lbl_text: "Welcome"
-    btn_txt: "Start"
-    btn_next_pge: "main"
-    direction: "left"
-    rep_num: rep_num
     chooser: chooser
 
-    BoxLayout:
-        orientation: "vertical"
-        spacing: 2
+    GridLayout:
+        cols: 2
+        #rows: 10
 
-        MDToolbar:
-            title: "Fit Aware"
-            anchor_title: 'center'
-            md_bg_color: app.theme_cls.primary_color
-            #left_action_items: [["menu", lambda x: x]]
-            #right_action_items: [["settings-outline", lambda x: app.show_theme_picker()]]
-            background_palette: "Primary"
+        Label:
+            text: "Practice"
 
-        MDStackLayout:
+        RelativeLayout:
+            id: chooser
+            ToggleButton:
+                text: "Bicep"
+                group: 'practice'
+                size_hint: None,None
+                size: 0.08 * root.width, 0.05 * root.height
+                pos: 0.12 * root.width, 0.350 * root.height
 
-            MDGridLayout:
-                padding: 2
-                #spacing: dp(10)
-                cols: 1
-                #size_hint_y: None
-                height: self.minimum_height
-                #row_default_height: 20
-                #row_force_default: True
-
-                MDLabel:
-                    text: "Welcome to FitAware, Let's Start Training"
-                    halign: 'center'
-                    text_size: (10,10)
-                    size_hint: (.5,.1)
-                MDSeparator:
-
-                MDGridLayout:
-                    cols: 4
-                    height: 20
-                    #padding: 10
-                    #spacing: 10
-
-                    # Row 1
-                    MDLabel:
-                        text: ""
-
-                    MDLabel:
-                        text: "What type of training today?"
-                        halign: 'center'
-
-                    MDBoxLayout:
-                        MDChooseChip:
-                            id: chooser
-                            pos_hint: {'x': 1, 'y': 0.4}
-
-                            MDChip:
-                                label: "Bicep"
-                                icon: "arm-flex-outline"
-                                callback: app.select_practice
-                                selected_chip_color: .21176470535294, .098039627451, 1, 1
-
-
-                            MDChip:
-                                label: "Push Ups"
-                                icon: "arm-flex-outline"
-                                callback: app.select_practice
-                                selected_chip_color: .21176470535294, .098039627451, 1, 1
-                    MDLabel:
-                        text: ""
-
-                    # Row 2
-                    MDLabel:
-                        text: ""
-
-                    MDLabel:
-                        text: "How many repetitions?"
-                        halign: 'center'
-
-                    MDBoxLayout:
-                        MDTextFieldRound:
-                            id: rep_num
-                            hint_text: 'Repetitions'
-                            pos_hint: {'x': -0.9, 'y': .4}
-                            max_text_length: 2
-
-                    MDBoxLayout:
-                        MDLabel:
-                            text: ""
-
-                    # Row 3
-                    MDLabel:
-                        text: ""
-
-                    MDBoxLayout:
-                        MDLabel:
-                            text: ""
-
-                    MDBoxLayout:
-                        MDRoundFlatButton:
-                            text: 'Start'
-                            pos_hint: {'center_x': 1, 'y': .8}
-                            on_press: app.sm.move_to_page("main")
+            ToggleButton:
+                text: "Push Ups"
+                group: 'practice'
+                size_hint: None,None
+                size: 0.1 * root.width, 0.05 * root.height
+                pos: 0.23 * root.width, 0.350 * root.height
