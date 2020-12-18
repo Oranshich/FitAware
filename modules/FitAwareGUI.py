@@ -63,7 +63,7 @@ class MainScreen(Screen):
         args = vars(ap.parse_args())
         if self.cam in self.grid.children:
             self.grid.remove_widget(self.cam)
-        self.cam = KivyCamera(capture=self.vs, fps=60, args=args, pr_type=self.practice_type,
+        self.cam = KivyCamera(capture=self.vs, fps=1000000, args=args, pr_type=self.practice_type,
                               prnt=self)
         self.grid.add_widget(self.cam)
         # self.cam.started = True
@@ -183,7 +183,7 @@ class CamApp(MDApp):
         return self.sm
 
     def select_practice(self,instance, value):
-        self.sm.mainScrn.practice_type = Bicep() if str(value).lower() in "bicep" else PushUP()
+        self.sm.mainScrn.practice_type = Bicep() if str(value).lower() in "bicep" else PushUp()
 
 
 if __name__ == '__main__':
