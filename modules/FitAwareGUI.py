@@ -155,11 +155,14 @@ class FitAwareSM(ScreenManager):
         self.dialog.dismiss(force=True)
 
     def validate_inputs(self):
-        if self.mainScrn.practice_type is None or len(self.wlcm.ids.rep_num.text) == 0:
+        try:
+            if self.mainScrn.practice_type is None or int(self.wlcm.ids.rep_num.text) <= 0:
+                return False
+            else:
+                self.mainScrn.create_camera()
+                return True
+        except Exception:
             return False
-        else:
-            self.mainScrn.create_camera()
-            return True
 
     def success(self,msg, speakingQ):
         self.change_screen_to_welcome()
