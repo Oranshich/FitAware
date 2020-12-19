@@ -1,24 +1,35 @@
 import argparse
-import time
-
 import cv2
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
+from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.toolbar import MDToolbar
-from kivymd.uix.chip import MDChip
 from modules.BicepExcercise import Bicep
 from modules.PushUpExcercise import PushUp
 
+"""
+This is the Main Py file of the FitAware,
+it is starting the GUI and the Algorithm app
+"""
+
 class WelcomeScreen(Screen):
+    """
+    This class is representing the welcome window in the KV file
+    """
     pass
 
+
 class MainScreen(Screen):
+    """
+    This class is representing the Main window of the app,
+    is has a child widget of the KivyCamera which is runs the camera for
+    capturing the video
+    """
     def __init__(self, scrn_mngr, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         self.grid = MDGridLayout()
@@ -46,8 +57,10 @@ class MainScreen(Screen):
         self.add_widget(self.grid)
 
 
-
     def set_tool_bar_params(self):
+        """
+        This function is creating the toolbar of the Main screen to be similar as the Welcome screen
+        """
         self.toolbar.title = "Fit Aware"
         self.toolbar.type = "top"
         self.toolbar.anchor_title = 'center'
@@ -55,6 +68,11 @@ class MainScreen(Screen):
         self.toolbar.elevation = 10
 
     def create_camera(self):
+        """
+        This function is creating the OpenCV camera
+        with the video capturing and creates the
+        KivyCamera child of the Main Screen
+        """
         self.vs = cv2.VideoCapture(0)
         ap = argparse.ArgumentParser()
         ap.add_argument("-v", "--video", help="path to the video file")
@@ -70,6 +88,11 @@ class MainScreen(Screen):
 
 
 class KivyCamera(Image):
+    """
+    This class is representing the KivyCamera widget
+    it is inheriting from the Image widget of Kivy
+    in-order to show the captured video
+    """
     def __init__(self, capture, fps,args, pr_type, prnt, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
@@ -81,7 +104,13 @@ class KivyCamera(Image):
         self.practice_type = pr_type
         Clock.schedule_interval(self.update, 1.0 / fps)
 
-    def update(self, dt):
+    def update(self):
+        """
+        This function is the update function
+        is it being called every 1 / fps
+        and it updates the Image in the widget
+        so it look like it is a video
+        """
         if self.started:
             ret, frame = self.capture.read()
             if ret:
@@ -102,7 +131,12 @@ class KivyCamera(Image):
 
 
 class FitAwareSM(ScreenManager):
-
+    """
+    This class is representing the Screen Manager
+    of the App, this manager is managing the two screens of the app
+    the <i>Welcome Screen</i> \n
+    and the <i>Main Screen</i>
+    """
 
     def __init__(self, prnt, **kwargs):
         super(FitAwareSM, self).__init__(**kwargs)
@@ -119,6 +153,11 @@ class FitAwareSM(ScreenManager):
         self.started = False
 
     def move_to_page(self, page_name_to_go):
+        """
+        This function is getting the name of the next screen
+        and change the screen of the app
+        :param page_name_to_go: the name of the next screen to go to
+        """
         if page_name_to_go == "main":
             if self.validate_inputs():
                 self.current = '_main_screen_'
@@ -131,12 +170,21 @@ class FitAwareSM(ScreenManager):
             self.change_screen_to_welcome()
 
     def clear_welcome_screen(self):
+        """
+        This function is cleaning the Welcome Screen before changing back to it,
+        it needs to be cleaned from the input data of the user
+        """
         chooser = self.wlcm.ids.chooser
         for chip in chooser.children:
             chip.color = chip.theme_cls.primary_color
         self.wlcm.ids.rep_num.text = ""
 
     def show_alert_dialog(self, text):
+        """
+        This function is getting a text message
+        and popups a modal windows with message
+        :param text: the text to show to the user
+        """
         if not self.dialog:
             self.dialog = MDDialog(
                 text="",
@@ -152,9 +200,15 @@ class FitAwareSM(ScreenManager):
         self.dialog.open()
 
     def close_dialog(self, instance):
+        """
+        This function is closing the opened dialog
+        """
         self.dialog.dismiss(force=True)
 
     def validate_inputs(self):
+        """
+        This function is validating the inputs of the user
+        """
         try:
             if self.mainScrn.practice_type is None or int(self.wlcm.ids.rep_num.text) <= 0:
                 return False
@@ -165,12 +219,22 @@ class FitAwareSM(ScreenManager):
             return False
 
     def success(self,msg, speakingQ):
+        """
+        This function is  getting a message and a Queue of speaking Queue
+        and reading the given message to the user
+        :param msg: the message to be read to the user
+        :param speakingQ: the Queue of the messages
+        """
         self.change_screen_to_welcome()
         speakingQ.push(msg)
         self.show_alert_dialog("Well Done!")
 
 
     def change_screen_to_welcome(self):
+        """
+        This function is changing the screen specifically to the Welcome screen
+        :return:
+        """
         self.clear_welcome_screen()
         self.current = '_wlcm_screen_'
         self.mainScrn.vs.release()
@@ -191,4 +255,7 @@ class CamApp(MDApp):
 
 
 if __name__ == '__main__':
-    CamApp().run()
+    cam_app = CamApp()
+    cam_app.run()
+    cam_app.sm.mainScrn.practice_type.q.stop()
+

@@ -1,6 +1,4 @@
 # import the necessary packages
-from imutils.video import VideoStream
-import argparse
 import imutils
 import time
 from timeit import default_timer as timer

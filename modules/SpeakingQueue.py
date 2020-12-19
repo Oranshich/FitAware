@@ -1,4 +1,3 @@
-from collections import deque
 import threading
 from queue import Queue
 import pyttsx3
@@ -9,13 +8,14 @@ class SpeakingQueue:
         self.queue = Queue()
         self.engineio = pyttsx3.init()
         self.voices = self.engineio.getProperty('voices')
-        self.engineio.setProperty('rate', 130)  # Aquí puedes seleccionar la velocidad de la voz
+        self.engineio.setProperty('rate', 130)
         self.engineio.setProperty('voice', self.voices[0].id)
-        self.run()
+        self.t = threading.Thread(target=self.worker)
+        self.is_running = False
 
     def run(self):
-        t = threading.Thread(target=self.worker)
-        t.start()
+        self.t.start()
+        self.is_running = True
 
     def worker(self):
         while True:
@@ -24,8 +24,16 @@ class SpeakingQueue:
                 self.speak(text)
 
     def speak(self, text):
+
         self.engineio.say(text)
         self.engineio.runAndWait()
 
     def push(self, text):
+        if not self.is_running:
+            self.run()
         self.queue.put(text)
+
+    def stop(self):
+        if self.is_running:
+            self.t.join()
+            self.is_running = False
