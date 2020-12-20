@@ -54,7 +54,9 @@ class SpeakingQueue:
         self.queue.put(text)
 
     def stop(self):
-        # TODO: add comments
+        """
+        This function is stopping the q and its thread
+        """
         if self.is_running:
             self.t.join()
             self.is_running = False
