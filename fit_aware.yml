@@ -99,5 +99,5 @@ dependencies:
     - pywin32-ctypes==0.2.0
     - requests==2.25.0
     - urllib3==1.26.2
-prefix: C:\Users\Gal\.conda\envs\Python36
+prefix: C:\Users\Gal\.conda\envs\fit_aware
 
