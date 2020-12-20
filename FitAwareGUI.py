@@ -9,8 +9,8 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.toolbar import MDToolbar
-from modules.BicepExcercise import Bicep
-from modules.PushUpExcercise import PushUp
+from BicepExcercise import Bicep
+from PushUpExcercise import PushUp
 
 """
 This is the Main Py file of the FitAware,

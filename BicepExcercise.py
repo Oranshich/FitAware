@@ -1,4 +1,4 @@
-from modules.PracticeBase import PracticeBase
+from PracticeBase import PracticeBase
 
 
 class Bicep(PracticeBase):
