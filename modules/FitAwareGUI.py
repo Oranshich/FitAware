@@ -86,6 +86,14 @@ class MainScreen(Screen):
         self.grid.add_widget(self.cam)
         # self.cam.started = True
 
+    def close(self):
+        """
+        This function is closing the Main Screen
+        by stopping the Queue thread
+        """
+        if self.practice_type:
+            self.practice_type.q.stop()
+
 
 class KivyCamera(Image):
     """
@@ -254,8 +262,19 @@ class CamApp(MDApp):
         self.sm.mainScrn.practice_type = Bicep() if str(value).lower() in "bicep" else PushUp()
 
 
-if __name__ == '__main__':
+def main():
+    """
+    This is the main function of the GUI
+    its starts the App and after runs it in an infinte loop
+    when the App is closed it is closing the Main Screen that
+    cant closed automatically
+    """
     cam_app = CamApp()
     cam_app.run()
-    cam_app.sm.mainScrn.practice_type.q.stop()
+
+    cam_app.sm.mainScrn.close()
+
+
+if __name__ == '__main__':
+    main()
 
