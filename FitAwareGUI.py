@@ -112,7 +112,7 @@ class KivyCamera(Image):
         self.practice_type = pr_type
         Clock.schedule_interval(self.update, 1.0 / fps)
 
-    def update(self):
+    def update(self, instance):
         """
         This function is the update function
         is it being called every 1 / fps
