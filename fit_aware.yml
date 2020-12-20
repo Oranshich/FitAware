@@ -1,4 +1,4 @@
-name: Python36
+name: fit_aware
 channels:
   - conda-forge
   - defaults
