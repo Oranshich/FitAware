@@ -1,15 +1,4 @@
-# import the necessary packages
-from imutils.video import VideoStream
-import argparse
-import imutils
-import time
-from timeit import default_timer as timer
-import cv2
-import numpy as np
-
-from modules.PracticeBase import PracticeBase
-from modules.SpeakingQueue import SpeakingQueue
-
+from PracticeBase import PracticeBase
 
 
 class Bicep(PracticeBase):
