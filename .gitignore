@@ -11,3 +11,6 @@
 /.idea/inspectionProfiles/profiles_settings.xml
 /output/output.avi
 /main.py
+/build/
+/dist/
+/FitAwareGUI.spec
