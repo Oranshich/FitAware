@@ -8,6 +8,12 @@ from modules.SpeakingQueue import SpeakingQueue
 
 
 class PracticeBase():
+    """
+    Class responsible for the main algorithm of the practice, all the functionality of calculating repetitions happens
+    in this class.It is inherited by the Bicep and PushUp classes - the only change between this class and them is the
+    is_smaller function, in PushUp the function checks in reverse with respect to the Bicep.
+    """
+
     def __init__(self):
         self.q = SpeakingQueue()
         self.firstFrame = None
@@ -19,6 +25,9 @@ class PracticeBase():
         self.addition_counter = 0
 
     def clear(self):
+        """
+        The function responsible for clear the variables before every run
+        """
         self.firstFrame = None
         self.counter = 0
         self.isDown = False
@@ -26,12 +35,31 @@ class PracticeBase():
         self.t0 = timer()
 
     def speak(self, text):
+        """
+        The function is responsible for adding the text we want the computer to say into the SpeakingQueue queue.
+        :param text: The text the voice needs to say
+        :return: enter the the text to the queue of the speaking queue
+        """
         self.q.push(text)
 
     def is_smaller(self, expected_smaller, expected_bigger):
+        """
+        The function checks if one variable is bigger then the second variable
+        :param expected_smaller: the variable that should be smaller
+        :param expected_bigger: the variable that should be smaller
+        :return: true if smaller small then the bigger
+        """
         return expected_smaller < expected_bigger
 
     def practice(self,vs, args, frame):
+        """
+        The central function, is responsible for all the logic that checks whether the trainee has performed the
+        required movement and counts him accordingly the amount of repetitions he has performed. The function each time
+        receives the current frame from the camera that captures the trainee performing the exercise,
+        pre-processing the image and checking whether he has performed a full repetition of the exercise.
+        :param frame: the current frame from the camera
+        :return: retun the frame with text on him.
+        """
         font = cv2.FONT_HERSHEY_SIMPLEX
         frame = frame if args.get("video", None) is None else frame[1]
         # if the frame could not be grabbed, then we have reached the end
