@@ -104,6 +104,8 @@ class PracticeBase():
             M_max_y = int(M_max["m01"] / M_max["m00"])
             if self.is_smaller(cY, M_max_y):
                 max_c = c
+                M_max_x = cX
+                M_max_y = cY
 
         if len(cnts) > 0:
             cv2.drawContours(frame, [max_c], -1, (0, 255, 0), 2)
@@ -119,14 +121,12 @@ class PracticeBase():
                     2,
                     cv2.LINE_4)
 
-        print("cnetroid yyyyy:   ", M_max_y)
         indices = np.where(thresh == [255])
 
         yCoordinatesAvarage = M_max_y
         # myCalc = np.sum(indices[1])/len(indices[1])
 
         if self.maxAvarage == 0:
-            print("inside")
             t1 = timer()
 
             if yCoordinatesAvarage > 0 and t1-self.t0 > 3:
@@ -147,8 +147,5 @@ class PracticeBase():
         if self.is_smaller(self.maxAvarage, yCoordinatesAvarage + self.addition_down) and self.maxAvarage != 0 and yCoordinatesAvarage != 0:
             self.isDown = True
 
-        print("you did ", self.counter)
-        print("Avarage ", yCoordinatesAvarage)
-        print("Max Aavrage", self.maxAvarage)
         self.firstFrame = gray
         return frame

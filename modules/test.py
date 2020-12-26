@@ -1,0 +1,178 @@
+# import the necessary packages
+from imutils.video import VideoStream
+import argparse
+import imutils
+import time
+from timeit import default_timer as timer
+import cv2
+import numpy as np
+
+from modules.SpeakingQueue import SpeakingQueue
+
+
+class test():
+    def __init__(self):
+        self.q = SpeakingQueue()
+        self.firstFrame = None
+        self.counter = 0
+        self.isDown = False
+        self.maxAvarage = 0
+        self.t0 = timer()
+
+
+    def speak(self, text):
+        self.q.push(text)
+
+    def practice(self):
+
+        ap = argparse.ArgumentParser()
+        ap.add_argument("-v", "--video", help="path to the video file")
+        ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
+
+        args = vars(ap.parse_args())
+        # if the video argument is None, then we are reading from webcam
+        if args.get("video", None) is None:
+            vs = VideoStream(src=0).start()
+            time.sleep(2.0)
+        # otherwise, we are reading from a video file
+        else:
+            vs = cv2.VideoCapture(args["video"])
+        # initialize the first frame in the video stream
+        firstFrame = None
+        counter = 0
+        isDown = False
+        maxAvarage = 0
+        first_frame_reset = 0
+        index = 0
+        reset = True
+        t0 = timer()
+        # black = np.ones((500, 500, 1), np.uint8) * 255
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        while True:
+            first_frame_reset += 1
+            # grab the current frame and initialize the occupied/unoccupied
+            # text
+            frame = vs.read()
+            frame = frame if args.get("video", None) is None else frame[1]
+            # if the frame could not be grabbed, then we have reached the end
+            # of the video
+            if frame is None:
+                break
+            # resize the frame, convert it to grayscale, and blur it
+            frame = imutils.resize(frame, width=500)
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.GaussianBlur(gray, (21, 21), 0)
+            # cv2.imshow("gray", gray)
+            # if the first frame is None, initialize it
+
+            if firstFrame is None:
+                firstFrame = gray
+                continue
+            # compute the absolute difference between the current frame and
+            # first frame
+            frameDelta = cv2.absdiff(firstFrame, gray)
+            # cv2.imshow("frameDelta", frameDelta)
+            thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+            # dilate the thresholded image to fill in holes, then find contours
+            # on thresholded image
+            thresh = cv2.dilate(thresh, None, iterations=2)
+
+            cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+                                    cv2.CHAIN_APPROX_SIMPLE)
+            cnts = imutils.grab_contours(cnts)
+
+            max_c = cnts[0] if len(cnts) > 0 else 0
+            index = 0
+            M_max_y = 0
+            M_max_x = 0
+            for c in cnts:
+                # compute the center of the contour
+                M = cv2.moments(c)
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                M_max = cv2.moments(max_c)
+                M_max_x = int(M_max["m10"] / M_max["m00"])
+                M_max_y = int(M_max["m01"] / M_max["m00"])
+                if cY < M_max_y:
+                    max_c = c
+                    M_max_x = cX
+                    M_max_y = cY
+
+            if len(cnts) > 0:
+                cv2.drawContours(frame, [max_c], -1, (0, 255, 0), 2)
+                cv2.circle(frame, (M_max_x, M_max_y), 7, (255, 255, 255), -1)
+                cv2.putText(frame, "center", (M_max_x - 20, M_max_y - 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                # print("cnetroid yyyyy:   ", M_max_y)
+                # show the image
+                cv2.putText(frame,
+                            str(counter),
+                            (50, 50),
+                            font, 1,
+                            (0, 255, 255),
+                            2,
+                            cv2.LINE_4)
+
+            # print("cnetroid yyyyy:   ", M_max_y)
+            indices = np.where(thresh == [255])
+            # yCoordinatesAvarage = np.average(indices[1], axis=0)
+            yCoordinatesAvarage = M_max_y
+            myCalc = np.sum(indices[1]) / len(indices[1])
+            # print("my avarage ", myCalc)
+            if maxAvarage == 0:
+                # print("inside")
+                t1 = timer()
+                # print('t1 time', t1)
+                if yCoordinatesAvarage > 0 and t1 - t0 > 3:
+                    time.sleep(1.0)
+
+                    self.speak("3")
+                    self.speak("2 ")
+                    self.speak("1 ")
+                    self.speak("GO!")
+                    maxAvarage = M_max_y
+
+            # yCoordinatesAvarage = np.average(indices[1], axis=0)
+
+            # yCoordinatesAvarage, frame = get_current_avg(vs, firstFrame, args)
+            if yCoordinatesAvarage - 20 <= maxAvarage and isDown and yCoordinatesAvarage != 0:
+                # if yCoordinatesAvarage < maxAvarage:
+                # maxAvarage = M_max_y
+                counter += 1
+                self.speak(str(counter))
+                isDown = False
+                time_between_repitition = timer()
+
+            time_to_check = timer()
+
+            # if counter > 0 and ((time_to_check - time_between_repitition) > 7):
+            #     print("time to check - time between = ", (time_to_check - time_between_repitition))
+            #     print("time between: ", time_between_repitition)
+            #     print("time to check: ", time_between_repitition)
+            #     speak("You take too much time between iterations")
+            #     time_between_repitition = timer()
+            if yCoordinatesAvarage - 110 > maxAvarage != 0:
+                isDown = True
+
+            # print("you did ", counter)
+            # print("Avarage ", yCoordinatesAvarage)
+            # print("Max Aavrage", maxAvarage)
+            # show the frame and record if the user presses a key
+            # cv2.imshow("Security Feed", frame)
+            firstFrame = gray
+            # cv2.imshow("Threshold", thresh)
+            cv2.imshow("Image", frame)
+            # cv2.imshow("Orginal", frame)
+            # cv2.imshow("Frame Delta", frameDelta)
+            key = cv2.waitKey(1) & 0xFF
+            # if the `q` key is pressed, break from the lop
+            if key == ord("q"):
+                break
+        # cleanup the camera and close any open windows
+        vs.stop() if args.get("video", None) is None else vs.release()
+        cv2.destroyAllWindows()
+
+
+test1 = test()
+test1.practice()
